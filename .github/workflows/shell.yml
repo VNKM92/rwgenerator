@@ -34,7 +34,7 @@ jobs:
           ls;
           bye;
           "
-
+ #deploy by data
       - name: FTP Deploy
         if: success()
         env:
