@@ -13,4 +13,7 @@ jobs:
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
+        password: ${{ secrets.FTP_PASSWORD  }}
+        port: 21                               # default SFTP port
+        source: "."                            # or ./build if using a static site generator
+        target: "/home2/kurrehxr/public_html/nword"  # Change this to your actual target 
