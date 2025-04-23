@@ -14,4 +14,4 @@ jobs:
         server: ftp.kurrentnews.com
         username: nword@hubflix.com.in
         password: ${{ secrets.Motion@123 }}
-        server-dir: /public_html/nword
+        server-dir: /home2/kurrehxr/public_html/nword
