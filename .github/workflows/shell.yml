@@ -1,25 +1,55 @@
-name: 🚀 Deploy to cPanel via SFTP
+name: FTP Deploy
 
 on:
   push:
     branches:
-      - main  # Change this if your deployment branch is different
+      - main
 
 jobs:
-  deploy:
-    name: 📦 SFTP Deploy to cPanel
+  ftp-deploy:
+    name: FTP Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: 🗃 Deploy Files to cPanel via SFTP
-      uses: appleboy/scp-action@master
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD  }}
-        port: 21                               # default SFTP port
-        source: "."                            # or ./build if using a static site generator
-        target: "/home2/kurrehxr/public_html/nword"  # Change this to your actual target 
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
+      - name: Test FTP Connection and Directory
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_TARGET_DIR: ${{ secrets.FTP_TARGET_DIR }}
+        run: |
+          lftp -c "
+          set ssl:verify-certificate no;
+          set ftp:ssl-allow no;
+          set ftp:ssl-force no;
+          set ftp:ssl-protect-data no;
+          open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
+          cd $FTP_TARGET_DIR;
+          ls;
+          bye;
+          "
+
+      - name: FTP Deploy
+        if: success()
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_TARGET_DIR: ${{ secrets.FTP_TARGET_DIR }}
+        run: |
+          lftp -c "
+          set ssl:verify-certificate no;
+          set ftp:ssl-allow no;
+          set ftp:ssl-force no;
+          set ftp:ssl-protect-data no;
+          open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER;
+          lcd .;
+          cd $FTP_TARGET_DIR;
+          mirror --reverse --delete --verbose ./ .;
+          bye;
