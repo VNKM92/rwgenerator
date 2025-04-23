@@ -1,56 +1,16 @@
-name: FTP shell
-
-on:
-  push:
-    branches:
-      - main
-
+on: push
+name: 🚀 Deploy website on push
 jobs:
-  ftp-deploy:
-    name: FTP shell
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install lftp
-        run: sudo apt-get install -y lftp
-
-      - name: Test FTP Connection and Directory
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
-          FTP_TARGET_DIR: ${{ secrets.FTP_TARGET_DIR }}
-        run: |
-          lftp -c "
-          set ssl:verify-certificate no;
-          set ftp:ssl-allow no;
-          set ftp:ssl-force no;
-          set ftp:ssl-protect-data no;
-          open -u $FTP_USER,$FTP_PASS $FTP_SERVER;
-          cd $FTP_TARGET_DIR;
-          ls;
-          bye;
-          "
-
-      - name: FTP shell
-        if: success()
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
-          FTP_TARGET_DIR: ${{ secrets.FTP_TARGET_DIR }}
-        run: |
-          lftp -c "
-          set ssl:verify-certificate no;
-          set ftp:ssl-allow no;
-          set ftp:ssl-force no;
-          set ftp:ssl-protect-data no;
-          open -u $FTP_USER,$FTP_PASS $FTP_SERVER;
-          lcd .;
-          cd $FTP_TARGET_DIR;
-          mirror --reverse --delete --verbose ./ .;
-          bye;
-          "
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v2.3.2
+    
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        server: ftp.samkirkland.com
+        username: myFtpUserName
+        password: ${{ secrets.ftp_password }}
